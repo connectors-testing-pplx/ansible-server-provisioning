@@ -1,0 +1,57 @@
+---
+# Base role: system hardening, time sync, and journald tuning.
+- name: Ensure system packages are up to date
+  ansible.builtin.package:
+    name: "*"
+    state: latest
+    update_cache: true
+  tags: [packages]
+
+- name: Set system timezone
+  ansible.builtin.timezone:
+    name: "{{ timezone }}"
+  notify: restart chrony
+
+- name: Install time sync daemon (RHEL family)
+  ansible.builtin.package:
+    name: chrony
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Install time sync daemon (Debian family)
+  ansible.builtin.package:
+    name: chrony
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Configure chrony
+  ansible.builtin.template:
+    src: chrony.conf.j2
+    dest: /etc/chrony.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart chrony
+
+- name: Ensure chrony is enabled and running
+  ansible.builtin.service:
+    name: "{{ 'chronyd' if ansible_os_family == 'RedHat' else 'chrony' }}"
+    state: started
+    enabled: true
+
+- name: Tune journald to persist logs across reboots
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/journald.conf
+    regexp: "^#?Storage="
+    line: "Storage=persistent"
+  notify: restart journald
+
+- name: Increase file descriptor limits
+  ansible.builtin.copy:
+    dest: /etc/security/limits.d/99-sysadmin.conf
+    content: |
+      *    soft   nofile    65535
+      *    hard   nofile    65535
+    owner: root
+    group: root
+    mode: "0644"

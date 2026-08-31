@@ -1,0 +1,22 @@
+---
+# Rolling restart — drains one host at a time before rebooting.
+- name: Rolling reboot across the fleet
+  hosts: all
+  become: true
+  serial: 1
+  gather_facts: false
+
+  tasks:
+    - name: Flush handlers before reboot
+      ansible.builtin.meta: flush_handlers
+
+    - name: Reboot host
+      ansible.builtin.reboot:
+        msg: "Scheduled rolling reboot"
+        reboot_timeout: 600
+        test_command: "whoami"
+
+    - name: Wait for host to settle
+      ansible.builtin.wait_for:
+        timeout: 15
+      delegate_to: localhost

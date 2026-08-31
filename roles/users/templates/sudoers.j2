@@ -1,0 +1,5 @@
+# Managed by Ansible — admin sudoers policy.
+# Members of the admin group get passwordless sudo with session logging.
+Cmnd_Alias MAINTENANCE = /usr/bin/systemctl, /usr/bin/journalctl, /usr/bin/apt, /usr/bin/yum, /usr/bin/dnf
+{{ admin_sudo_group }} ALL=(ALL) NOPASSWD: ALL
+Defaults:{{ admin_sudo_group }} !requiretty, log_input, log_output

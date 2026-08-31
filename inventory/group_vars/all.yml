@@ -1,0 +1,25 @@
+---
+# Group vars applied to every host.
+timezone: UTC
+ntp_servers:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+  - 2.pool.ntp.org
+  - 3.pool.ntp.org
+
+# Admin users to create (keys live in the users role, never committed here).
+admin_users:
+  - { name: ops,     shell: /bin/bash, key_file: roles/users/files/keys/ops.pub }
+  - { name: deploy,  shell: /bin/bash, key_file: roles/users/files/keys/deploy.pub }
+
+# Packages to install on all hosts.
+common_packages:
+  - vim
+  - tmux
+  - curl
+  - wget
+  - rsync
+  - unzip
+  - ntpstat
+  - net-tools
+  - sysstat

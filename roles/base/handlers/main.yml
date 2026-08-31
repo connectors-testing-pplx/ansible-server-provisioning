@@ -1,0 +1,10 @@
+---
+- name: restart chrony
+  ansible.builtin.service:
+    name: "{{ 'chronyd' if ansible_os_family == 'RedHat' else 'chrony' }}"
+    state: restarted
+
+- name: restart journald
+  ansible.builtin.service:
+    name: systemd-journald
+    state: restarted

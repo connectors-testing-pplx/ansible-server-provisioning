@@ -1,0 +1,14 @@
+---
+# Provisioning playbook — applies base config, users, and common tooling.
+- name: Provision and configure base system
+  hosts: all
+  become: true
+  gather_facts: true
+
+  roles:
+    - role: base
+      tags: [base]
+    - role: users
+      tags: [users]
+    - role: common_tools
+      tags: [tools]

@@ -1,0 +1,2 @@
+---
+admin_sudo_group: "{{ 'wheel' if ansible_os_family == 'RedHat' else 'sudo' }}"

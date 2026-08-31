@@ -1,0 +1,21 @@
+---
+# Common tooling: ops utilities and monitoring agent stub.
+- name: Install common packages
+  ansible.builtin.package:
+    name: "{{ common_packages }}"
+    state: present
+    update_cache: true
+
+- name: Install Node Exporter for Prometheus metrics (placeholder)
+  ansible.builtin.get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version | default('1.7.0') }}/node_exporter-{{ node_exporter_version | default('1.7.0') }}.linux-amd64.tar.gz"
+    dest: /tmp/node_exporter.tar.gz
+    mode: "0644"
+  when: install_node_exporter | default(false)
+
+- name: Ensure sysstat is enabled
+  ansible.builtin.service:
+    name: sysstat
+    state: started
+    enabled: true
+  when: "'sysstat' in common_packages"

@@ -1,0 +1,7 @@
+# Ansible files that should never be committed
+*.retry
+*.log
+vault-password.txt
+*.vault
+roles/users/files/keys/*.pub
+inventory/group_vars/*.vault.yml

@@ -1,0 +1,56 @@
+---
+# Users role: create admin accounts, install SSH keys, lock down SSH.
+- name: Create admin groups
+  ansible.builtin.group:
+    name: "{{ item.name }}"
+    state: present
+  loop: "{{ admin_users }}"
+
+- name: Create admin user accounts
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    shell: "{{ item.shell }}"
+    groups: "sudo,wheel"
+    append: true
+    create_home: true
+  loop: "{{ admin_users }}"
+
+- name: Ensure .ssh directory exists for each admin
+  ansible.builtin.file:
+    path: "/home/{{ item.name }}/.ssh"
+    state: directory
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: "0700"
+  loop: "{{ admin_users }}"
+
+- name: Install authorized SSH keys
+  ansible.builtin.authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ lookup('file', item.key_file) }}"
+    state: present
+    exclusive: true
+  loop: "{{ admin_users }}"
+
+- name: Drop sudoers policy for admin group
+  ansible.builtin.template:
+    src: sudoers.j2
+    dest: "/etc/sudoers.d/admin"
+    owner: root
+    group: root
+    mode: "0440"
+    validate: /usr/sbin/visudo -csf %s
+
+- name: Disable root SSH login
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^#?PermitRootLogin"
+    line: "PermitRootLogin no"
+  notify: restart sshd
+
+- name: Disable SSH password authentication
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^#?PasswordAuthentication"
+    line: "PasswordAuthentication no"
+  notify: restart sshd

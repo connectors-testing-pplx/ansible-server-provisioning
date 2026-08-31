@@ -1,0 +1,9 @@
+# Managed by Ansible — do not edit manually.
+# Time sync via chrony
+{{ ntp_servers | map('regex_replace', '^(.*)$', 'server \1 iburst') | join('\n') }}
+
+# Allow client systems to synchronize with this server if it is a time source.
+# local stratum 10
+makestep 1.0 3
+rtcsync
+logdir /var/log/chrony
